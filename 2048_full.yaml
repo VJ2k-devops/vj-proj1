@@ -1,0 +1,83 @@
+---
+##Namespace -  Creates a separate logical space in your cluster to isolate resources related to this app.
+##Why? This namespace must match the Fargate profile if you're using Fargate — pods in this namespace will then run on Fargate.*/
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: game-2048
+---
+## Deployment - Defines a Deployment for your app that manages 5 identical pod replicas.
+##Namespace: game-2048 — ties into your Fargate profile.
+##Labels: Used by the Service to match pods (app.kubernetes.io/name: app-2048).
+##Image: docker-2048 — a containerized version of the classic 2048 game.
+##Port: Exposes port 80 on each pod.
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: game-2048
+  name: deployment-2048
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app-2048
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app-2048
+    spec:
+      containers:
+      - image: public.ecr.aws/l6m2t8p7/docker-2048:latest
+        imagePullPolicy: Always
+        name: app-2048
+        ports:
+        - containerPort: 80
+---
+##Service
+##Purpose: Exposes the pods within the cluster under a stable DNS name (service-2048).
+##Type: NodePort: (exposes a high port on each worker node — though for ALB Ingress, this is often overridden)
+##Selector: Matches pods with the same label as in the deployment.
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: game-2048
+  name: service-2048
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: app-2048
+---
+##Ingress via ALB Controller
+##Purpose: Tells the AWS ALB Ingress Controller to create an external Application Load Balancer.
+##internet-facing: Expose publicly
+##target-type: ip: Send traffic directly to pod IPs (required for Fargate)
+##Ingress Class: alb — required to trigger the ALB controller
+##Routing Rule: Send all / path traffic to service-2048 on port 80
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: game-2048
+  name: ingress-2048
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: service-2048
+              port:
+                number: 80
