@@ -3,8 +3,11 @@ Project 1 - Deploying Scalable Applications on AWS EKS with Kubernetes and Ingre
 1. Prerequisites
 
 kubectl
+
 eksctl
+
 AWS CLI
+
 aws-iam-authenticator - separate installation needed using chocolatey because it was buggy during AWS CLI Installation
 
 2. Creating eks cluster with a default fargate profile 
