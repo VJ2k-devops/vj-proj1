@@ -20,9 +20,9 @@ aws-iam-authenticator - separate installation needed using chocolatey because it
 
 ```kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/examples/2048/2048_full.yaml```
 
-see 2048_full.yaml for full explaination of what the yaml provisions and why
+See 2048_full.yaml for full explaination of what the yaml provisions and why
 
-wait till all pods and services are ready and running
+Wait till all pods and services are ready and running
 
 5. Configure IAM OIDC provider 
 ```eksctl utils associate-iam-oidc-provider --cluster vjproject1 --approve```
@@ -60,7 +60,7 @@ To check if ingress resources are up and connected appropriately
 
 ```kubectl get ingress -n game-2048```
 
-make sure its talking to alb and hosts are present
+Make sure its talking to alb and hosts are present
 
 
 
